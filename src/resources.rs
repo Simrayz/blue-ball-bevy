@@ -6,16 +6,16 @@ pub const STAR_SPAWN_TIME: f32 = 1.0;
 
 #[derive(Resource)]
 pub struct SoundEffectHandles {
-    pub explosion: Handle<AudioSource>,
-    pub laser_large: Handle<AudioSource>,
+    pub game_over: Handle<AudioSource>,
+    pub star_sound: Handle<AudioSource>,
 }
 
 impl FromWorld for SoundEffectHandles {
     fn from_world(world: &mut World) -> Self {
         let asset_server = world.resource::<AssetServer>();
         Self {
-            explosion: asset_server.load("audio/explosionCrunch_000.ogg"),
-            laser_large: asset_server.load("audio/laserLarge_000.ogg"),
+            game_over: asset_server.load("audio/jingles_NES00.ogg"),
+            star_sound: asset_server.load("audio/powerUp4.ogg"),
         }
     }
 }

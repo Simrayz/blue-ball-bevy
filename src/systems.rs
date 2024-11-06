@@ -248,7 +248,7 @@ pub fn enemy_hit_player(
             if distance < player_radius + enemy_radius {
                 println!("Enemy hit player! Game over!");
                 commands.spawn(AudioBundle {
-                    source: sound_effects.explosion.clone(),
+                    source: sound_effects.game_over.clone(),
                     settings: PlaybackSettings::DESPAWN,
                 });
                 commands.entity(player_entity).despawn();
@@ -276,7 +276,7 @@ pub fn player_hit_star(
                 println!("Player hit star!");
                 score.value += 1;
                 commands.spawn(AudioBundle {
-                    source: sound_effects.laser_large.clone(),
+                    source: sound_effects.star_sound.clone(),
                     settings: PlaybackSettings::DESPAWN,
                 });
                 commands.entity(star_entity).despawn();
