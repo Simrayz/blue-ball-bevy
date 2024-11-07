@@ -16,3 +16,19 @@ pub fn play_soundtrack(mut commands: Commands, asset_server: Res<AssetServer>) {
         Soundtrack,
     ));
 }
+
+#[derive(Resource)]
+pub struct SoundEffectHandles {
+    pub game_over: Handle<AudioSource>,
+    pub star_sound: Handle<AudioSource>,
+}
+
+impl FromWorld for SoundEffectHandles {
+    fn from_world(world: &mut World) -> Self {
+        let asset_server = world.resource::<AssetServer>();
+        Self {
+            game_over: asset_server.load("audio/jingles_NES00.ogg"),
+            star_sound: asset_server.load("audio/powerUp4.ogg"),
+        }
+    }
+}
