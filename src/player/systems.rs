@@ -25,7 +25,7 @@ pub fn spawn_player(
                 custom_size: Some(Vec2::new(PLAYER_SIZE, PLAYER_SIZE)),
                 ..default()
             },
-            texture: asset_server.load("sprites/ball_blue_large.png"),
+            texture: asset_server.load("sprites/ship_0003.png"),
             ..default()
         },
         Player {},
@@ -58,6 +58,10 @@ pub fn player_movement(
         }
 
         transform.translation += direction * PLAYER_SPEED * time.delta_seconds();
+        *transform = transform.with_rotation(Quat::from_axis_angle(
+            Vec3::Z,
+            direction.xy().to_angle() - std::f32::consts::FRAC_PI_2,
+        ));
     }
 }
 
