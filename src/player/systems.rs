@@ -21,6 +21,10 @@ pub fn spawn_player(
     commands.spawn((
         SpriteBundle {
             transform: Transform::from_xyz(window.width() / 2.0, window.height() / 2.0, 0.0),
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(PLAYER_SIZE, PLAYER_SIZE)),
+                ..default()
+            },
             texture: asset_server.load("sprites/ball_blue_large.png"),
             ..default()
         },
@@ -35,6 +39,7 @@ pub fn player_movement(
 ) {
     if let Ok(mut transform) = player_query.get_single_mut() {
         let mut direction = Vec3::ZERO;
+
         if keyboard_input.pressed(KeyCode::ArrowUp) || keyboard_input.pressed(KeyCode::KeyW) {
             direction += Vec3::new(0.0, 1.0, 0.0);
         }
@@ -98,10 +103,10 @@ pub fn enemy_hit_player(
         for enemy_transform in enemy_query.iter() {
             let distance = player_transform
                 .translation
-                .distance(enemy_transform.translation);
+                .distance_squared(enemy_transform.translation);
             let player_radius = PLAYER_SIZE / 2.0;
             let enemy_radius = ENEMY_SIZE / 2.0;
-            if distance < player_radius + enemy_radius {
+            if distance < (player_radius + enemy_radius).powi(2) {
                 println!("Enemy hit player! Game over!");
                 commands.spawn(AudioBundle {
                     source: sound_effects.game_over.clone(),
@@ -125,10 +130,10 @@ pub fn player_hit_star(
         for (star_entity, star_transform) in star_query.iter() {
             let distance = player_transform
                 .translation
-                .distance(star_transform.translation);
+                .distance_squared(star_transform.translation);
             let player_radius = PLAYER_SIZE / 2.0;
             let star_radius = STAR_SIZE / 2.0;
-            if distance < player_radius + star_radius {
+            if distance < (player_radius + star_radius).powi(2) {
                 println!("Player hit star!");
                 score.value += 1;
                 commands.spawn(AudioBundle {
