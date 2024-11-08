@@ -4,7 +4,7 @@ use rand::prelude::*;
 
 use super::components::Star;
 use super::resources::StarSpawnTimer;
-use super::NUMBER_OF_STARS;
+use super::{NUMBER_OF_STARS, STAR_SIZE};
 
 pub fn spawn_stars(
     mut commands: Commands,
@@ -21,6 +21,11 @@ pub fn spawn_stars(
             SpriteBundle {
                 transform: Transform::from_xyz(random_x, random_y, 0.0),
                 texture: asset_server.load("sprites/star.png"),
+                sprite: Sprite {
+                    custom_size: Some(Vec2::new(STAR_SIZE, STAR_SIZE)),
+                    color: get_sprite_color(),
+                    ..default()
+                },
                 ..default()
             },
             Star {},
@@ -47,9 +52,21 @@ pub fn spawn_star(
             SpriteBundle {
                 transform: Transform::from_xyz(random_x, random_y, 0.0),
                 texture: asset_server.load("sprites/star.png"),
+                sprite: Sprite {
+                    custom_size: Some(Vec2::new(STAR_SIZE, STAR_SIZE)),
+                    color: get_sprite_color(),
+                    ..default()
+                },
                 ..default()
             },
             Star {},
         ));
     }
+}
+
+fn get_sprite_color() -> Color {
+    let color_hues: Vec<f32> = vec![60.0, 120.0, 180., 300.];
+    let random_hue = color_hues.choose(&mut rand::thread_rng()).unwrap();
+
+    Color::hsv(*random_hue, 0.7, 1.0)
 }

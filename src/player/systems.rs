@@ -1,6 +1,7 @@
 use bevy::{prelude::*, window::PrimaryWindow};
 
-use super::components::Player;
+use super::components::*;
+use super::PLAYER_ROTATION_SPEED;
 use super::PLAYER_SIZE;
 use super::PLAYER_SPEED;
 use crate::enemy::components::*;
@@ -10,6 +11,67 @@ use crate::score::resources::*;
 use crate::soundtrack::*;
 use crate::star::components::*;
 use crate::star::STAR_SIZE;
+
+pub fn rotation_system(mut query: Query<(&FaceInDirection, &mut Transform)>) {
+    for (face, mut transform) in query.iter_mut() {
+        *transform = transform.with_rotation(Quat::from_axis_angle(
+            Vec3::Z,
+            face.angle - std::f32::consts::FRAC_PI_2,
+        ));
+    }
+}
+
+pub fn control_player_system(
+    mut query: Query<(&Player, &mut FaceInDirection)>,
+    keys: Res<ButtonInput<KeyCode>>,
+    time: Res<Time>,
+) {
+    let dt = time.delta_seconds();
+    for (player, mut face) in query.iter_mut() {
+        let rotate_dir = match (
+            keys.pressed(KeyCode::ArrowLeft),
+            keys.pressed(KeyCode::ArrowRight),
+        ) {
+            (true, false) => 1.0,
+            (false, true) => -1.0,
+            _ => 0.0,
+        };
+
+        face.angle += rotate_dir * player.rotation_speed * dt;
+    }
+}
+
+pub fn control_player_speed_system(
+    mut query: Query<(&Player, &mut MoveInFacingDirection)>,
+    keys: Res<ButtonInput<KeyCode>>,
+    score: Res<Score>,
+) {
+    for (_player, mut move_facing) in query.iter_mut() {
+        let score_increase = 1.0 + score.value as f32 / 100.0;
+        let movement_speed = match (
+            keys.pressed(KeyCode::ArrowUp),
+            keys.pressed(KeyCode::ArrowDown),
+        ) {
+            (true, false) => PLAYER_SPEED * 1.5 * score_increase,
+            (false, true) => PLAYER_SPEED * 0.5 * score_increase,
+            _ => PLAYER_SPEED * score_increase,
+        };
+        move_facing.speed = movement_speed;
+    }
+}
+
+pub fn move_in_facing_direction_system(
+    mut query: Query<(&FaceInDirection, &MoveInFacingDirection, &mut Transform)>,
+    time: Res<Time>,
+) {
+    let dt = time.delta_seconds();
+    for (face, move_facing, mut transform) in query.iter_mut() {
+        let mut delta_pos = transform.translation;
+        delta_pos.x += dt * face.angle.cos() * move_facing.speed;
+        delta_pos.y += dt * face.angle.sin() * move_facing.speed;
+        *transform = transform.with_translation(delta_pos);
+    }
+}
 
 pub fn spawn_player(
     mut commands: Commands,
@@ -25,44 +87,17 @@ pub fn spawn_player(
                 custom_size: Some(Vec2::new(PLAYER_SIZE, PLAYER_SIZE)),
                 ..default()
             },
-            texture: asset_server.load("sprites/ship_0003.png"),
+            texture: asset_server.load("sprites/ship.png"),
             ..default()
         },
-        Player {},
+        MoveInFacingDirection {
+            speed: PLAYER_ROTATION_SPEED,
+        },
+        FaceInDirection { angle: 0.0 },
+        Player {
+            rotation_speed: PLAYER_SPEED.to_radians(),
+        },
     ));
-}
-
-pub fn player_movement(
-    keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut player_query: Query<&mut Transform, With<Player>>,
-    time: Res<Time>,
-) {
-    if let Ok(mut transform) = player_query.get_single_mut() {
-        let mut direction = Vec3::ZERO;
-
-        if keyboard_input.pressed(KeyCode::ArrowUp) || keyboard_input.pressed(KeyCode::KeyW) {
-            direction += Vec3::new(0.0, 1.0, 0.0);
-        }
-        if keyboard_input.pressed(KeyCode::ArrowDown) || keyboard_input.pressed(KeyCode::KeyS) {
-            direction += Vec3::new(0.0, -1.0, 0.0);
-        }
-        if keyboard_input.pressed(KeyCode::ArrowLeft) || keyboard_input.pressed(KeyCode::KeyA) {
-            direction += Vec3::new(-1.0, 0.0, 0.0);
-        }
-        if keyboard_input.pressed(KeyCode::ArrowRight) || keyboard_input.pressed(KeyCode::KeyD) {
-            direction += Vec3::new(1.0, 0.0, 0.0);
-        }
-
-        if direction.length() > 0.0 {
-            direction = direction.normalize();
-        }
-
-        transform.translation += direction * PLAYER_SPEED * time.delta_seconds();
-        *transform = transform.with_rotation(Quat::from_axis_angle(
-            Vec3::Z,
-            direction.xy().to_angle() - std::f32::consts::FRAC_PI_2,
-        ));
-    }
 }
 
 pub fn confine_player_movement(

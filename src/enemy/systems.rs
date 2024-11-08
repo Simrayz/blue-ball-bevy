@@ -19,7 +19,11 @@ pub fn spawn_enemies(
         commands.spawn((
             SpriteBundle {
                 transform: Transform::from_xyz(random_x, random_y, 0.0),
-                texture: asset_server.load("sprites/ball_red_large.png"),
+                texture: asset_server.load(get_random_enemy_texture()),
+                sprite: Sprite {
+                    color: Color::hsv(0., 0.5, 1.),
+                    ..default()
+                },
                 ..default()
             },
             Enemy {
@@ -126,7 +130,11 @@ pub fn spawn_enemies_over_time(
         commands.spawn((
             SpriteBundle {
                 transform: Transform::from_xyz(random_x, random_y, 0.0),
-                texture: asset_server.load("sprites/ball_red_large.png"),
+                texture: asset_server.load(get_random_enemy_texture()),
+                sprite: Sprite {
+                    color: Color::hsv(0., 0.5, 1.),
+                    ..default()
+                },
                 ..default()
             },
             Enemy {
@@ -134,4 +142,14 @@ pub fn spawn_enemies_over_time(
             },
         ));
     }
+}
+
+pub fn get_random_enemy_texture() -> String {
+    let random_number = random::<f32>();
+    let meteor_asset = if random_number > 0.5 {
+        "sprites/meteor_round.png".to_string()
+    } else {
+        "sprites/meteor_square.png".to_string()
+    };
+    return meteor_asset;
 }

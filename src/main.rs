@@ -22,7 +22,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .init_resource::<SoundEffectHandles>()
         .add_event::<GameOver>()
-        .add_plugins((EnemyPlugin, PlayerPlugin, ScorePlugin, StarPlugin))
+        .add_plugins((EnemyPlugin, StarPlugin, PlayerPlugin, ScorePlugin))
         .add_systems(Startup, (spawn_camera, play_soundtrack))
         .add_systems(Update, (exit_game, handle_game_over))
         .run();
